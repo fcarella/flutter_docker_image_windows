@@ -50,7 +50,7 @@ Before your first launch, you must configure Windows networking to allow the con
 1.  Once the container is running, open the integrated terminal (`Ctrl`+`\``). You will be in the `/home/flutteruser/app` directory.
 2.  Run the following command to create a new Flutter project inside the `app` folder:
     ```bash
-    flutter create .
+    flutter create app
     ```
 3.  Your `app` folder is now populated with your new Flutter project.
 
