@@ -1,19 +1,18 @@
 {
 	"name": "Flutter Windows Dev",
-
-	// Point to the new, platform-agnostic docker-compose file.
 	"dockerComposeFile": "../docker-compose.yml",
-
-	// The service within the compose file VS Code should use.
 	"service": "flutter-dev",
-
-	// The folder where your project will be mounted and opened.
 	"workspaceFolder": "/home/flutteruser/app",
-
-	// IMPORTANT: Connect as the non-root user created in the Dockerfile.
 	"remoteUser": "flutteruser",
 
-	// VS Code specific settings and extensions for the container.
+	// We don't strictly need this anymore with the postStartCommand, but it doesn't hurt.
+	"containerEnv": {
+		"ADB_SERVER_HOST": "172.30.208.1"
+	},
+
+	// Automate the direct connection after the container starts.
+	"postStartCommand": "adb connect 172.30.208.1:5555",
+
 	"customizations": {
 		"vscode": {
 			"extensions": [
