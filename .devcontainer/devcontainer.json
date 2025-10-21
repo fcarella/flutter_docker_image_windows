@@ -1,0 +1,25 @@
+{
+	"name": "Flutter Windows Dev",
+
+	// Point to the new, platform-agnostic docker-compose file.
+	"dockerComposeFile": "../docker-compose.yml",
+
+	// The service within the compose file VS Code should use.
+	"service": "flutter-dev",
+
+	// The folder where your project will be mounted and opened.
+	"workspaceFolder": "/home/flutteruser/app",
+
+	// IMPORTANT: Connect as the non-root user created in the Dockerfile.
+	"remoteUser": "flutteruser",
+
+	// VS Code specific settings and extensions for the container.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Dart-Code.flutter",
+				"Dart-Code.dart-code"
+			]
+		}
+	}
+}

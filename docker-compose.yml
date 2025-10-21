@@ -1,0 +1,19 @@
+services:
+  flutter-dev:
+    # Build the image from the Dockerfile in the project's root.
+    build:
+      context: .
+    
+    # Mount the project folder into the app directory in the container.
+    volumes:
+      - .:/home/flutteruser/app:cached
+
+    # Forward specific ports from the container to the Windows host.
+    # This replaces the Linux-only 'network_mode: host'.
+    ports:
+      # Forward a common port for Flutter web development.
+      # You can access your web app at http://localhost:8080 on Windows.
+      - "8080:8080"
+    
+    # Keep the container running in the background.
+    command: sleep infinity
