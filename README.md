@@ -29,7 +29,9 @@ This guide walks you through cloning this template, creating your own app, and p
 
 #### Step 1: Clone This Template
 
-Clone this repository to your local machine. You will rename this folder to match your project's name later.```bash
+Clone this repository to your local machine. You will rename this folder to match your project's name later.
+
+```bash
 git clone <URL_of_this_repository>
 ```
 
