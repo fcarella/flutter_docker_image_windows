@@ -5,13 +5,13 @@
 	"workspaceFolder": "/home/flutteruser/app",
 	"remoteUser": "flutteruser",
 
-	// We don't strictly need this anymore with the postStartCommand, but it doesn't hurt.
+	// Use Docker's special DNS name. This will resolve to the correct host IP automatically.
 	"containerEnv": {
-		"ADB_SERVER_HOST": "172.30.208.1"
+		"ADB_SERVER_HOST": "host.docker.internal"
 	},
 
-	// Automate the direct connection after the container starts.
-	"postStartCommand": "adb connect 172.30.208.1:5555",
+	// The postStartCommand will now also use the dynamic DNS name.
+	"postStartCommand": "adb connect host.docker.internal:5555",
 
 	"customizations": {
 		"vscode": {
