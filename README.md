@@ -1,3 +1,9 @@
+Excellent! I'm glad we've reached a complete and robust solution.
+
+Here is the final, comprehensive `README.md`. It has been rewritten to be a complete, step-by-step guide for a new user, incorporating the final, corrected automation script and the full workflow for setting up and using the environment after a reboot.
+
+---
+
 # Flutter Dev Container Template for Windows 11
 
 This repository is a starter template for bootstrapping a new Flutter project with a fully containerized, reproducible development environment. It uses a **Fedora 42** Linux container and is integrated with **Visual Studio Code's Dev Containers** for a seamless "clone and code" experience on a **Windows 11 host**.
@@ -9,19 +15,20 @@ The environment handles all the complex networking required for emulator access 
 -   **Consistent Environment:** Builds inside a Fedora 42 container, eliminating "works on my machine" issues.
 -   **Flutter SDK:** Latest stable version, ready to create and run projects.
 -   **Android Toolchain:** Java 21 OpenJDK and the latest Android SDK tools are pre-installed.
--   **Automated Emulator Networking:** Includes a script to handle dynamic IP addresses after reboots.
+-   **Automated Emulator Networking:** Includes a PowerShell script to automatically handle dynamic WSL IP addresses after reboots.
 -   **Working Hot Reload:** Configured to use VS Code's debugger for a reliable hot reload experience.
 -   **Git-Ready Workflow:** Includes instructions for detaching from this template and starting your own project history.
 
 ## Prerequisites
 
-Before you begin, ensure you have the following installed on your **Windows 11 host machine**:
+Before you begin, ensure you have the following installed and configured on your **Windows 11 host machine**:
 
 1.  [**Docker Desktop for Windows**](https://docs.docker.com/desktop/install/windows-install/): Must be configured to use the **WSL 2 backend**.
 2.  [**Visual Studio Code**](https://code.visualstudio.com/).
 3.  The **[Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)** extension for VS Code.
-4.  An Android Emulator installed via **Android Studio** and the latest **Android SDK Platform-Tools**.
-5.  **Administrator access** to PowerShell for the one-time network setup.
+4.  An Android Emulator installed via **Android Studio**.
+5.  The **Android SDK Platform-Tools** added to your Windows `Path` environment variable, so you can run `adb` from any terminal.
+6.  **Administrator access** to PowerShell.
 
 ## How to Use This Template
 
@@ -48,7 +55,7 @@ Follow the detailed guide in the **Troubleshooting** section below: **"Emulator 
 
 #### Step 4: Create Your Flutter Application
 
-1.  Once the container is running, open the integrated terminal (`Ctrl`+`\`). You will be in the `/home/flutteruser/app` directory.
+1.  Once the container is running, open the integrated terminal (`Ctrl`+`\``). You will be in the `/home/flutteruser/app` directory.
 2.  Run the following command to create a new Flutter project inside the `app` folder:
     ```bash
     flutter create .
@@ -70,12 +77,9 @@ Once you are ready to treat this as your own project, detach it from this templa
 2.  **Rename the root project folder** to your own project's name (e.g., `my-awesome-app`).
 3.  Open a terminal (like PowerShell or Git Bash) and navigate into your newly renamed folder.
 4.  **Delete the template's Git history** and initialize your own:
-    ```bash
+    ```powershell
     # For Windows Command Prompt / PowerShell
     rd /s /q .git
-
-    # For Git Bash on Windows
-    # rm -rf .git
     ```
 5.  **Create your new repository:**
     ```bash
@@ -91,7 +95,7 @@ Once you are ready to treat this as your own project, detach it from this templa
 
 Because the WSL IP address is dynamic, you must run the network setup script **once** after every time you restart your computer.
 
-1.  **Run the Automation Script:** Right-click the `Update-AdbProxy.ps1` script in your project folder and select **"Run with PowerShell"**. This will re-configure the network proxy rules.
+1.  **Run the Automation Script:** Right-click the `Update-AdbProxy.ps1` script in your project folder and select **"Run with PowerShell"**. It will re-configure the network proxy rules.
 2.  **Start ADB Server:** Open a regular PowerShell terminal and run `adb start-server`.
 3.  You can now start your emulator and open the dev container as usual.
 
@@ -99,36 +103,43 @@ Because the WSL IP address is dynamic, you must run the network setup script **o
 
 ### Emulator Not Detected (Dynamic IP Address Fix)
 
-**Symptom:** The `postStartCommand` fails with "No route to host" or "Connection refused".
-**Cause:** The WSL virtual network IP address changes on reboot, breaking the port forwarding rules.
-**Solution:** This template includes a PowerShell script to automatically find the correct IP and configure the network. You must run it once before first use and once after every reboot.
+**Symptom:** The container fails to start with an error like "No route to host" or "Connection refused" in the `postStartCommand` log.
+**Cause:** Network isolation between Docker and Windows, combined with dynamic IP addresses for the WSL network.
+**Solution:** This template includes a PowerShell script to automatically find the correct host IP and configure Windows network port forwarding.
 
 **Step 1: Create the `Update-AdbProxy.ps1` Script**
 Create a file named `Update-AdbProxy.ps1` in your root project folder with the following content:
 ```powershell
-# Update-AdbProxy.ps1
+# Update-AdbProxy.ps1 (Version 3 - Robust)
 
-Write-Host "Finding the IP address for the Docker WSL network adapter..." -ForegroundColor Cyan
-$wslIp = (Get-NetIPAddress -InterfaceAlias 'vEthernet (Default Switch)' -AddressFamily IPv4).IPAddress
+Write-Host "Searching for the Docker/WSL virtual network adapter..." -ForegroundColor Cyan
 
-if (-not $wslIp) {
-    Write-Host "ERROR: Could not find IP for 'vEthernet (Default Switch)'. Please check adapter names with 'Get-NetIPAddress'." -ForegroundColor Red
+# Find any vEthernet adapter with "WSL" in its name.
+# Ensure the result is always treated as an array to safely check its count.
+$wslAdapters = @(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -like 'vEthernet (WSL*)' })
+
+if ($wslAdapters.Count -ne 1) {
+    Write-Host "ERROR: Found $($wslAdapters.Count) network adapters matching 'vEthernet (WSL*)'." -ForegroundColor Red
+    Write-Host "Please run 'Get-NetIPAddress -AddressFamily IPv4' and update the script with the correct InterfaceAlias if needed."
     exit
 }
 
-Write-Host "Found Docker Host IP: $wslIp" -ForegroundColor Green
+$wslIp = $wslAdapters.IPAddress
+Write-Host "Found Docker Host IP: $wslIp on adapter '$($wslAdapters.InterfaceAlias)'" -ForegroundColor Green
+
 $portsToForward = @(5554, 5555)
 
 foreach ($port in $portsToForward) {
     Write-Host "Configuring port proxy for port $port..." -ForegroundColor Cyan
-    # Remove any old rule for this port on any old IP to prevent conflicts. This is a robust way to clean up.
+    # Remove any old rule on any old IP to prevent conflicts.
     netsh interface portproxy delete v4tov4 listenport=$port listenaddress=* | Out-Null
     # Add the new, correct rule.
     $result = netsh interface portproxy add v4tov4 listenport=$port listenaddress=$wslIp connectport=$port connectaddress=127.0.0.1
     Write-Host "  $result"
 }
 
-Write-Host "`nConfiguration complete." -ForegroundColor Green
+Write-Host "`nConfiguration complete. You may now start your emulator and the VS Code container." -ForegroundColor Green
+Write-Host "Make sure your devcontainer.json uses 'host.docker.internal'." -ForegroundColor Yellow
 ```
 
 **Step 2: Run the Script for the First Time**
@@ -145,8 +156,7 @@ Write-Host "`nConfiguration complete." -ForegroundColor Green
 4.  The script will find the correct IP and set up the necessary port forwarding. You can now close the admin PowerShell window.
 
 **Step 3: Verify `devcontainer.json` is Dynamic**
-Ensure your `.devcontainer/devcontainer.json` uses `host.docker.internal`. This allows it to work automatically with the IP found by the script.
-
+Ensure your `.devcontainer/devcontainer.json` uses `host.docker.internal` for both the ADB server host and the connection command. This allows it to work automatically with the IP found by the script.
 ```json
 {
 	// ...
@@ -157,6 +167,12 @@ Ensure your `.devcontainer/devcontainer.json` uses `host.docker.internal`. This 
 	// ...
 }
 ```
+
+### Hot Reload Does Not Work in Terminal
+
+**Symptom:** You run `flutter run` in the terminal and saving a file does not trigger hot reload.
+**Cause:** File-saving events on Windows are not properly communicated to the Linux container.
+**Solution:** Always launch your app using the VS Code debugger (**F5**). The VS Code Dart extension correctly sends the reload command.
 
 ### Build Fails with Dart Errors (e.g., 'Vector3' not found)
 

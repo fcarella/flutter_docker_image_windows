@@ -1,28 +1,33 @@
-# Update-AdbProxy.ps1
+# Update-AdbProxy.ps1 (Version 3 - Final)
 
-Write-Host "Finding the IP address for the Docker WSL network adapter..." -ForegroundColor Cyan
+Write-Host "Searching for the Docker/WSL virtual network adapter..." -ForegroundColor Cyan
 
-# Find the active IP address for the virtual switch Docker uses.
-$wslIp = (Get-NetIPAddress -InterfaceAlias 'vEthernet (Default Switch)' -AddressFamily IPv4).IPAddress
+# Find any vEthernet adapter with "WSL" in its name. This is more reliable.
+# Ensure the result is always treated as an array to safely check its count.
+$wslAdapters = @(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -like 'vEthernet (WSL*)' })
 
-if (-not $wslIp) {
-    Write-Host "ERROR: Could not find IP for 'vEthernet (Default Switch)'. Please check your Hyper-V network adapter names." -ForegroundColor Red
+# Check if we found exactly one adapter.
+if ($wslAdapters.Count -ne 1) {
+    Write-Host "ERROR: Found $($wslAdapters.Count) network adapters matching 'vEthernet (WSL*)'." -ForegroundColor Red
+    Write-Host "Please run 'Get-NetIPAddress -AddressFamily IPv4' and manually identify the correct one."
+    # If you know the correct one, you can hardcode it here, for example:
+    # $wslIp = "172.17.80.1"
+    # In your case, it seems the script should work, but this is a safeguard.
     exit
 }
 
-Write-Host "Found Docker Host IP: $wslIp" -ForegroundColor Green
+$wslIp = $wslAdapters[0].IPAddress
+Write-Host "Found Docker Host IP: $wslIp on adapter '$($wslAdapters[0].InterfaceAlias)'" -ForegroundColor Green
 
-# Define the ports the emulator uses
+# --- The rest of the script is the same ---
+
 $portsToForward = @(5554, 5555)
 
 foreach ($port in $portsToForward) {
     Write-Host "Configuring port proxy for port $port..." -ForegroundColor Cyan
-
-    # First, try to remove any existing rule for this port to prevent errors.
-    # We ignore errors here because the rule might not exist.
-    netsh interface portproxy delete v4tov4 listenport=$port listenaddress=$wslIp | Out-Null
-
-    # Now, add the new, correct rule.
+    # Remove any old rule on any old IP to prevent conflicts.
+    netsh interface portproxy delete v4tov4 listenport=$port listenaddress=* | Out-Null
+    # Add the new, correct rule.
     $result = netsh interface portproxy add v4tov4 listenport=$port listenaddress=$wslIp connectport=$port connectaddress=127.0.0.1
     Write-Host "  $result"
 }
