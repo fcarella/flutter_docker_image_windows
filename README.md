@@ -1,12 +1,16 @@
-Excellent! I'm glad we've reached a complete and robust solution.
+Of course. That's a good point for clarity. However, running `flutter create app` from within the `/home/flutteruser/app` directory would result in an undesirable nested structure: `./app/app/`.
 
-Here is the final, comprehensive `README.md`. It has been rewritten to be a complete, step-by-step guide for a new user, incorporating the final, corrected automation script and the full workflow for setting up and using the environment after a reboot.
+The standard and intended workflow here is to create the project *inside* the existing `app` folder. The correct command for this is `flutter create .` (the dot signifies the current directory).
+
+I have updated the `README.md` to make this instruction clearer by explaining what the `.` command does. This achieves your goal of creating the project in the `app` folder without the extra nesting.
+
+Here is the final, complete version of the `README.md`.
 
 ---
 
 # Flutter Dev Container Template for Windows 11
 
-This repository is a starter template for bootstrapping a new Flutter project with a fully containerized, reproducible development environment. It uses a **Fedora 42** Linux container and is integrated with **Visual Studio Code's Dev Containers** for a seamless "clone and code" experience on a **Windows 11 host**.
+This repository is a starter template for bootstrapping a new Flutter project from scratch. It uses a **Fedora 42** Linux container and is integrated with **Visual Studio Code's Dev Containers** for a seamless "clone and code" experience on a **Windows 11 host**.
 
 The environment handles all the complex networking required for emulator access and hot reload, allowing you to go from `git clone` to a running Flutter app in minutes.
 
@@ -15,7 +19,7 @@ The environment handles all the complex networking required for emulator access 
 -   **Consistent Environment:** Builds inside a Fedora 42 container, eliminating "works on my machine" issues.
 -   **Flutter SDK:** Latest stable version, ready to create and run projects.
 -   **Android Toolchain:** Java 21 OpenJDK and the latest Android SDK tools are pre-installed.
--   **Automated Emulator Networking:** Includes a PowerShell script to automatically handle dynamic WSL IP addresses after reboots.
+-   **Automated Emulator Networking:** Includes a PowerShell script to handle dynamic WSL IP addresses after reboots.
 -   **Working Hot Reload:** Configured to use VS Code's debugger for a reliable hot reload experience.
 -   **Git-Ready Workflow:** Includes instructions for detaching from this template and starting your own project history.
 
@@ -55,12 +59,12 @@ Follow the detailed guide in the **Troubleshooting** section below: **"Emulator 
 
 #### Step 4: Create Your Flutter Application
 
-1.  Once the container is running, open the integrated terminal (`Ctrl`+`\``). You will be in the `/home/flutteruser/app` directory.
-2.  Run the following command to create a new Flutter project inside the `app` folder:
+1.  Once the container is running, open the integrated terminal (`Ctrl`+`\``). The terminal prompt will be in the `/home/flutteruser/app` directory, which corresponds to the `app` folder on your Windows machine.
+2.  Run the following command to create the new Flutter project inside this directory (the `.` means "this current folder"):
     ```bash
     flutter create .
     ```
-3.  The `app` folder on your Windows machine will now be populated with the new Flutter project files.
+3.  Your `app` folder on Windows will now be populated with the new Flutter project files.
 
 #### Step 5: Run and Develop Your App
 
@@ -95,7 +99,7 @@ Once you are ready to treat this as your own project, detach it from this templa
 
 Because the WSL IP address is dynamic, you must run the network setup script **once** after every time you restart your computer.
 
-1.  **Run the Automation Script:** Right-click the `Update-AdbProxy.ps1` script in your project folder and select **"Run with PowerShell"**. It will re-configure the network proxy rules.
+1.  **Run the Automation Script:** Right-click the `Update-AdbProxy.ps1` script in your project folder and select **"Run with PowerShell"**. This will re-configure the network proxy rules.
 2.  **Start ADB Server:** Open a regular PowerShell terminal and run `adb start-server`.
 3.  You can now start your emulator and open the dev container as usual.
 
@@ -120,7 +124,7 @@ $wslAdapters = @(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.Interf
 
 if ($wslAdapters.Count -ne 1) {
     Write-Host "ERROR: Found $($wslAdapters.Count) network adapters matching 'vEthernet (WSL*)'." -ForegroundColor Red
-    Write-Host "Please run 'Get-NetIPAddress -AddressFamily IPv4' and update the script with the correct InterfaceAlias if needed."
+    Write-Host "Please run 'Get-NetIPAddress -AddressFamily IPv4' and manually identify the correct one."
     exit
 }
 
