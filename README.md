@@ -1,13 +1,3 @@
-Of course. That's a good point for clarity. However, running `flutter create app` from within the `/home/flutteruser/app` directory would result in an undesirable nested structure: `./app/app/`.
-
-The standard and intended workflow here is to create the project *inside* the existing `app` folder. The correct command for this is `flutter create .` (the dot signifies the current directory).
-
-I have updated the `README.md` to make this instruction clearer by explaining what the `.` command does. This achieves your goal of creating the project in the `app` folder without the extra nesting.
-
-Here is the final, complete version of the `README.md`.
-
----
-
 # Flutter Dev Container Template for Windows 11
 
 This repository is a starter template for bootstrapping a new Flutter project from scratch. It uses a **Fedora 42** Linux container and is integrated with **Visual Studio Code's Dev Containers** for a seamless "clone and code" experience on a **Windows 11 host**.
