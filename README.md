@@ -180,3 +180,34 @@ flutter precache --force
 flutter clean
 flutter pub get
 ```
+
+Add this section to your **README.md** to clarify the iOS workflow for your team or future users.
+
+***
+
+## iOS Development for macOS Users
+
+While this Fedora-based Docker environment provides a complete and reproducible setup for **Android, Web, and Linux Desktop**, it is important to note the limitations regarding **iOS development**.
+
+### The Limitation
+Apple’s build toolchain (**Xcode**) is proprietary and only runs on macOS. Because Docker containers share the host's Linux kernel, it is currently impossible to compile, sign, or simulate a native iOS application from *inside* this (or any) Linux-based Docker container.
+
+### Recommended Workflow for Mac Users
+If you are developing on a Mac, you should adopt a **hybrid approach**:
+
+1.  **Logic & Cross-Platform Development:** Use the **Dev Container** as usual for writing Dart code, managing business logic, and testing on the Web or Android. This ensures your development environment remains consistent with the rest of the team.
+2.  **Native iOS Builds:** When you need to run the app on an iOS Simulator or a physical iPhone:
+    *   Ensure you have **Xcode**, **CocoaPods**, and the **Flutter SDK** installed natively on your host macOS machine.
+    *   Open a terminal on your **host Mac** (not inside the VS Code Dev Container).
+    *   Navigate to the project folder and run:
+        ```bash
+        flutter precache --ios
+        cd app/ios && pod install
+        cd .. && flutter run -d <ios_device_id>
+        ```
+    *   Alternatively, you can open the `app/ios/Runner.xcworkspace` file in **Xcode** on your Mac to manage certificates, signing, and App Store releases.
+
+### For Windows and Linux Users
+If you do not have access to a Mac, you can still develop the Flutter application using this container. However, to generate an iOS build (IPA), you will need to:
+*   Use a **CI/CD Service** (such as GitHub Actions, Codemagic, or Bitrise) which provides Mac-based build agents.
+*   The code you write inside this container is fully compatible; it simply requires a Mac-based environment to perform the final compilation and signing step.
