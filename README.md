@@ -199,7 +199,6 @@ flutter clean
 flutter pub get
 ```
 
-Add this section to your **README.md** to clarify the iOS workflow for your team or future users.
 
 ***
 
