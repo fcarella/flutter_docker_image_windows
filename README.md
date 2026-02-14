@@ -1,3 +1,21 @@
+## How to Use This Template
+
+There are two ways to use this project depending on your goals:
+
+### Option A: Starting a New App (Recommended)
+If you want to use this environment to build your own Flutter application:
+1. Click the **"Use this template"** button at the top of this GitHub page to create a fresh repository.
+2. Clone **your new** repository to your Windows machine.
+3. Follow the [One-Time Network Setup](#one-time-network-setup) below.
+4. Open the folder in VS Code and click **"Reopen in Container"**.
+5. In the container terminal, run `flutter create .` inside the `/app` folder.
+
+### Option B: Contributing to this Setup
+If you want to suggest improvements to the Docker image or scripts:
+1. **Fork** this repository.
+2. Clone your fork and make your changes.
+3. Submit a **Pull Request**.
+
 # Flutter Dev Container Template for Windows 11
 
 This repository is a starter template for bootstrapping a new Flutter project from scratch. It uses a **Fedora 42** Linux container and is integrated with **Visual Studio Code's Dev Containers** for a seamless "clone and code" experience on a **Windows 11 host**.
